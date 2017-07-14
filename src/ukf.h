@@ -124,6 +124,12 @@ public:
    * @param P_out predicted state covariance matrix
    */
   void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out);
+
+  /**
+   * Predict Sigma Points
+   * @param Xsig_out matrix of predicted sigma points
+   */
+  void UKF::SigmaPointPrediction(MatrixXd* Xsig_out);
 };
 
 #endif /* UKF_H */
