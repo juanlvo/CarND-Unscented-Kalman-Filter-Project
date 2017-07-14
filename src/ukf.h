@@ -130,6 +130,12 @@ public:
    * @param Xsig_out matrix of predicted sigma points
    */
   void UKF::SigmaPointPrediction(MatrixXd* Xsig_out);
+
+  /**
+   * Method Augmentation of Sigma Points
+   * @param Xsig_out augmented sigma points
+   */
+  void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out);
 };
 
 #endif /* UKF_H */
