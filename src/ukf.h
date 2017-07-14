@@ -136,6 +136,12 @@ public:
    * @param Xsig_out augmented sigma points
    */
   void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out);
+
+  /**
+   * Method for generate the sigma points
+   * @param Xsig_out matrix with the sigma points
+   */
+  void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out);
 };
 
 #endif /* UKF_H */
