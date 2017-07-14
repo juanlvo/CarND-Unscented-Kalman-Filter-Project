@@ -108,7 +108,22 @@ public:
    * @param x_out the state matrix
    * @param P_out the covariance matrix
    */
-  void UKF::UpdateState(VectorXd* x_out, MatrixXd* P_out)
+  void UKF::UpdateState(VectorXd* x_out, MatrixXd* P_out);
+
+  /**
+   * Predict the radar measurement
+   * @param z_out prediction matrix
+   * @param S_out covariance matrix
+   */
+  void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out);
+
+
+  /**
+   * Predict Mean and Convariance Matrix
+   * @param x_out state mean matrix
+   * @param P_out predicted state covariance matrix
+   */
+  void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out);
 };
 
 #endif /* UKF_H */
