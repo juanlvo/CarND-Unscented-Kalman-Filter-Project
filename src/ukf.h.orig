@@ -108,7 +108,16 @@ public:
    * @param x_out the state matrix
    * @param P_out the covariance matrix
    */
+<<<<<<< HEAD
   void UpdateState(VectorXd* x_out, MatrixXd* P_out);
+
+  /**
+   * Predict the radar measurement
+   * @param z_out
+   */
+  void PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out);
+=======
+  void UKF::UpdateState(VectorXd* x_out, MatrixXd* P_out);
 
   /**
    * Predict the radar measurement
@@ -142,6 +151,7 @@ public:
    * @param Xsig_out matrix with the sigma points
    */
   void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out);
+>>>>>>> eb99d844e7dd5a577c3c94d24c0286ec96994bd3
 };
 
 #endif /* UKF_H */

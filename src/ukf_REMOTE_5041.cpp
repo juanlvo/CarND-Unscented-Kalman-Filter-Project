@@ -341,7 +341,6 @@ void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out) {
           0, 0,std_radrd*std_radrd;
   S = S + R;
 
-
   //print result
   std::cout << "z_pred: " << std::endl << z_pred << std::endl;
   std::cout << "S: " << std::endl << S << std::endl;
