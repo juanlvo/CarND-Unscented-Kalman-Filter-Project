@@ -290,10 +290,6 @@ void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out) {
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug + 1);
 
-/*******************************************************************************
- * Student part begin
- ******************************************************************************/
-
   //transform sigma points into measurement space
   for (int i = 0; i < 2 * n_aug + 1; i++) {  //2n+1 simga points
 
@@ -340,10 +336,6 @@ void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out) {
           0, 0,std_radrd*std_radrd;
   S = S + R;
 
-
-/*******************************************************************************
- * Student part end
- ******************************************************************************/
 
   //print result
   std::cout << "z_pred: " << std::endl << z_pred << std::endl;
