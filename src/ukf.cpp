@@ -51,6 +51,12 @@ UKF::UKF() {
 
   Hint: one or more values initialized above might be wildly off...
   */
+
+  // for verify the initialization of the object
+  is_initialized_ = false;
+
+  //verification of the time
+  previous_timestamp_ = 0;
 }
 
 UKF::~UKF() {}
@@ -60,12 +66,93 @@ UKF::~UKF() {}
  * either radar or laser.
  */
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
-  /**
-  TODO:
+	  /**
+	  TODO:
 
-  Complete this function! Make sure you switch between lidar and radar
-  measurements.
-  */
+	  Complete this function! Make sure you switch between lidar and radar
+	  measurements.
+	  */
+	  if (!is_initialized_) {
+
+		    // first measurement
+		    cout << "EKF: " << endl;
+		    x_ << 1, 1, 1, 1, 1;
+
+			if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
+			  /**
+				 Convert radar from polar to Cartesian coordinates and initialize state.
+			  */
+			  float rho = meas_package.raw_measurements_[0];
+			  float phi = meas_package.raw_measurements_[1];
+			  float rho_prime = meas_package.raw_measurements_[2];
+
+			  //Conversion from polar to Cartesian coordinates and initialize it
+
+			  float x = rho * cos(phi);
+			  float y = rho * sin(phi);
+			  float vx = rho_prime * cos(phi);
+			  float vy = rho_prime * sin(phi);
+
+			  x_ << x, y, vx, vy, 0;
+
+			} else if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
+
+				ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0, 0;
+
+			}
+
+			// Initial covariance matrix
+			ekf_.P_ << 1, 0, 0, 0, 0,
+					   0, 1, 0, 0, 0,
+					   0, 0, 1000, 0, 0,
+					   0, 0, 0, 1000, 0,
+					   0, 0, 0, 0, 1000;
+			// Print the initialization results
+			cout << "UKF initial: " << x_ << endl;
+			// Save the initial timestamp for dt calculation
+			previous_timestamp_ = measurement_pack.timestamp_;
+
+			// done initializing, no need to predict or update
+			is_initialized_ = true;
+			return;
+	  }
+	  /*****************************************************************************
+	   *  Prediction
+	   ****************************************************************************/
+	  // Calculate the timestep between measurements in seconds
+	  float dt = (measurement_pack.timestamp_ - previous_timestamp_);
+	  dt /= 1000000.0; // convert micros to s
+	  previous_timestamp_ = measurement_pack.timestamp_;
+
+	  Prediction(dt);
+
+	  /*****************************************************************************
+	   *  Update
+	   ****************************************************************************/
+
+	  /**
+	   TODO:
+	     * Use the sensor type to perform the update step.
+	     * Update the state and covariance matrices.
+	   */
+
+	  if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
+	    // Radar updates
+		cout << "RADAR"<< endl;
+		H_ = tools.CalculateJacobian(ekf_.x_); //???
+	    ekf_.R_ = R_radar_; //???
+	    UpdateRadar(measurement_pack.raw_measurements_);
+	  } else if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_){
+	    // Laser updates
+		cout << "LASER" << endl;
+	    H_ = H_laser_;  //???
+	    R_ = R_laser_; //??
+	    UpdateLidar(measurement_pack.raw_measurements_);
+	  }
+
+	  // print the output
+	  cout << "x_ = " << ekf_.x_ << endl;
+	  cout << "P_ = " << ekf_.P_ << endl;
 }
 
 /**
