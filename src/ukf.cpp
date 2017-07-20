@@ -247,6 +247,30 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the radar NIS.
   */
+
+	//mean predicted measurement  rho, phi, rho_dot
+	VectorXd z = VectorXd::Zero(n_zrad_);
+	z << meas_package.raw_measurements_(0),meas_package.raw_measurements_(1),meas_package.raw_measurements_(2);
+
+	//Kalman gain K;
+	MatrixXd K = MatrixXd::Zero(n_x_,n_zrad_);
+	K = Tc * S.inverse();
+
+	//residual
+	VectorXd z_diff = VectorXd::Zero(n_zrad_);
+	z_diff = z - z_pred;
+
+	//angle normalization
+	while (z_diff(1)> M_PI) z_diff(1)-=2.*M_PI;
+	while (z_diff(1)<-M_PI) z_diff(1)+=2.*M_PI;
+
+	//update state mean and covariance matrix
+	x_ = x_ + K * z_diff;
+	P_ = P_ - K*S*K.transpose();
+	NIS_radar_ = z_diff.transpose() * S.inverse() * z_diff;
+
+	return;
+
 }
 
 /**
