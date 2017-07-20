@@ -44,6 +44,9 @@ UKF::UKF() {
   // Radar measurement noise standard deviation radius change in m/s
   std_radrd_ = 0.3;
 
+  // State dimension
+  n_x_ = 5;
+
   /**
   TODO:
 
@@ -57,6 +60,12 @@ UKF::UKF() {
 
   //verification of the time
   previous_timestamp_ = 0;
+
+  //* radar measurement dimension
+  n_zrad_ = 3;
+
+  //* radar measurement dimension
+  n_zlas_ = 2;
 }
 
 UKF::~UKF() {}
@@ -94,7 +103,6 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	  // Calculate the timestep between measurements in seconds
 	  float dt = (measurement_pack.timestamp_ - previous_timestamp_);
 	  dt /= 1000000.0; // convert micros to s
-	  previous_timestamp_ = measurement_pack.timestamp_;
 
 	  Prediction(dt);
 
@@ -111,20 +119,50 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	  if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
 	    // Radar updates
 		cout << "RADAR"<< endl;
-		H_ = tools.CalculateJacobian(ekf_.x_); //???
-	    ekf_.R_ = R_radar_; //???
-	    UpdateRadar(measurement_pack.raw_measurements_);
-	  } else if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_){
+
+	    //mean predicted measurement
+	    VectorXd z_pred = VectorXd::Zero(n_zrad_);
+
+	    //measurement covariance matrix S
+	    MatrixXd S = MatrixXd::Zero(n_zrad_,n_zrad_);
+
+	    // cross-correlation matrix Tc
+	    MatrixXd Tc = MatrixXd::Zero(n_x_, n_zrad_);
+
+	    // get predictions for x,S and Tc in RADAR space
+	    PredictRadarMeasurement(z_pred, S, Tc);
+
+	    // update the state using the RADAR measurement
+	    UpdateRadar(meas_package, z_pred, Tc, S);
+
+	  } else if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
 	    // Laser updates
 		cout << "LASER" << endl;
-	    H_ = H_laser_;  //???
-	    R_ = R_laser_; //??
-	    UpdateLidar(measurement_pack.raw_measurements_);
+
+	    //mean predicted measurement
+	    VectorXd z_pred = VectorXd::Zero(n_zlas_);
+
+	    //measurement covariance matrix S
+	    MatrixXd S = MatrixXd::Zero(n_zlas_,n_zlas_);
+
+	    // cross-correlation matrix Tc
+	    MatrixXd Tc = MatrixXd::Zero(n_x_, n_zlas_);
+
+	    // get predictions for x,S and Tc in Lidar space
+	    PredictLidarMeasurement(z_pred, S, Tc);
+
+	    // update the state using the LIDAR measurement
+	    UpdateLidar(meas_package, z_pred, Tc, S);
+
 	  }
 
+	  // update the time
+	  previous_timestamp_ = meas_package.timestamp_;
+
 	  // print the output
-	  cout << "x_ = " << ekf_.x_ << endl;
-	  cout << "P_ = " << ekf_.P_ << endl;
+	  cout << "P_ = " << P_ << endl;
+
+	  return;
 }
 
 /**
@@ -590,39 +628,23 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
   //define spreading parameter
   double lambda = 3 - n_aug;
 
-  //set example state
-  VectorXd x = VectorXd(n_x);
-  x <<   5.7441,
-         1.3800,
-         2.2049,
-         0.5015,
-         0.3528;
-
-  //create example covariance matrix
-  MatrixXd P = MatrixXd(n_x, n_x);
-  P <<     0.0043,   -0.0013,    0.0030,   -0.0022,   -0.0020,
-          -0.0013,    0.0077,    0.0011,    0.0071,    0.0060,
-           0.0030,    0.0011,    0.0054,    0.0007,    0.0008,
-          -0.0022,    0.0071,    0.0007,    0.0098,    0.0100,
-          -0.0020,    0.0060,    0.0008,    0.0100,    0.0123;
-
   //create augmented mean vector
-  VectorXd x_aug = VectorXd(7);
+  VectorXd x_aug = VectorXd(n_aug_);
 
   //create augmented state covariance
-  MatrixXd P_aug = MatrixXd(7, 7);
+  MatrixXd P_aug = MatrixXd(n_aug_, n_aug_);
 
   //create sigma point matrix
   MatrixXd Xsig_aug = MatrixXd(n_aug, 2 * n_aug + 1);
 
   //create augmented mean state
-  x_aug.head(5) = x;
+  x_aug.head(5) = x_;
   x_aug(5) = 0;
   x_aug(6) = 0;
 
   //create augmented covariance matrix
   P_aug.fill(0.0);
-  P_aug.topLeftCorner(5,5) = P;
+  P_aug.topLeftCorner(5,5) = P_;
   P_aug(5,5) = std_a*std_a;
   P_aug(6,6) = std_yawdd*std_yawdd;
 
@@ -642,6 +664,8 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
 
   //write result
   *Xsig_out = Xsig_aug;
+
+  return;
 
 }
 
