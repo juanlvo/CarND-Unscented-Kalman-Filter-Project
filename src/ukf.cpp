@@ -75,38 +75,10 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	  if (!is_initialized_) {
 
 		    // first measurement
-		    cout << "EKF: " << endl;
-		    x_ << 1, 1, 1, 1, 1;
+		    cout << "UKF: " << endl;
 
-			if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
-			  /**
-				 Convert radar from polar to Cartesian coordinates and initialize state.
-			  */
-			  float rho = meas_package.raw_measurements_[0];
-			  float phi = meas_package.raw_measurements_[1];
-			  float rho_prime = meas_package.raw_measurements_[2];
+		    SetIntialValues(const MeasurementPackage meas_package);
 
-			  //Conversion from polar to Cartesian coordinates and initialize it
-
-			  float x = rho * cos(phi);
-			  float y = rho * sin(phi);
-			  float vx = rho_prime * cos(phi);
-			  float vy = rho_prime * sin(phi);
-
-			  x_ << x, y, vx, vy, 0;
-
-			} else if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
-
-				ekf_.x_ << measurement_pack.raw_measurements_[0], measurement_pack.raw_measurements_[1], 0, 0, 0;
-
-			}
-
-			// Initial covariance matrix
-			ekf_.P_ << 1, 0, 0, 0, 0,
-					   0, 1, 0, 0, 0,
-					   0, 0, 1000, 0, 0,
-					   0, 0, 0, 1000, 0,
-					   0, 0, 0, 0, 1000;
 			// Print the initialization results
 			cout << "UKF initial: " << x_ << endl;
 			// Save the initial timestamp for dt calculation
@@ -722,4 +694,48 @@ void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out) {
   //write result
   *Xsig_out = Xsig;
 
+}
+
+/**
+ * SetIntialValues program for initialize the object
+ * @param {MeasurementPackage} meas_package, initialize the initial values of the covariance matrix
+ */
+void UKF::SetIntialValues(const MeasurementPackage meas_package) {
+
+	  // Initial state Covariance Matrix P
+	  P_ = MatrixXd(5, 5);
+	  P_ <<   1, 0, 0, 0, 0,
+	          0, 1, 0, 0, 0,
+	          0, 0, 1, 0, 0,
+	          0, 0, 0, 1, 0,
+	          0, 0, 0, 0, 1;
+
+
+	if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
+	  /**
+		 Convert radar from polar to Cartesian coordinates and initialize state.
+	  */
+	  float rho = meas_package.raw_measurements_[0];
+	  float phi = meas_package.raw_measurements_[1];
+	  float rho_prime = meas_package.raw_measurements_[2];
+
+	  //Conversion from polar to Cartesian coordinates and initialize it
+
+	  float x = rho * cos(phi);
+	  float y = rho * sin(phi);
+	  float vx = rho_prime * cos(phi);
+	  float vy = rho_prime * sin(phi);
+
+	  x_ << x, y, sqrt(vx*vx +vy*vy),0,0;
+
+	} else if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
+
+		x_ << measurement_pack.raw_measurements_(0), measurement_pack.raw_measurements_(1), 0, 0, 0;
+
+	}
+
+	// Print the initialization results
+	cout << "UKF initial: " << x_ << endl;
+
+	return;
 }

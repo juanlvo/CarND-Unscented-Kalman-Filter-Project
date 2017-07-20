@@ -115,7 +115,7 @@ public:
    * @param z_out prediction matrix
    * @param S_out covariance matrix
    */
-  void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out);
+  void PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out);
 
 
   /**
@@ -123,25 +123,31 @@ public:
    * @param x_out state mean matrix
    * @param P_out predicted state covariance matrix
    */
-  void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out);
+  void PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out);
 
   /**
    * Predict Sigma Points
    * @param Xsig_out matrix of predicted sigma points
    */
-  void UKF::SigmaPointPrediction(MatrixXd* Xsig_out);
+  void SigmaPointPrediction(MatrixXd* Xsig_out);
 
   /**
    * Method Augmentation of Sigma Points
    * @param Xsig_out augmented sigma points
    */
-  void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out);
+  void AugmentedSigmaPoints(MatrixXd* Xsig_out);
 
   /**
    * Method for generate the sigma points
    * @param Xsig_out matrix with the sigma points
    */
-  void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out);
+  void GenerateSigmaPoints(MatrixXd* Xsig_out);
+
+  /**
+   * SetIntialValues program for initialize the object
+   * @param {MeasurementPackage} meas_package, initialize the initial values of the covariance matrix
+   */
+  void SetIntialValues(const MeasurementPackage meas_package);
 };
 
 #endif /* UKF_H */
