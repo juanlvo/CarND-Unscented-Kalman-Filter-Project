@@ -86,12 +86,12 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 		    // first measurement
 		    cout << "UKF: " << endl;
 
-		    SetIntialValues(const MeasurementPackage meas_package);
+		    SetIntialValues(meas_package);
 
 			// Print the initialization results
 			cout << "UKF initial: " << x_ << endl;
 			// Save the initial timestamp for dt calculation
-			previous_timestamp_ = measurement_pack.timestamp_;
+			previous_timestamp_ = meas_package.timestamp_;
 
 			// done initializing, no need to predict or update
 			is_initialized_ = true;
@@ -101,7 +101,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	   *  Prediction
 	   ****************************************************************************/
 	  // Calculate the timestep between measurements in seconds
-	  float dt = (measurement_pack.timestamp_ - previous_timestamp_);
+	  float dt = (meas_package.timestamp_ - previous_timestamp_);
 	  dt /= 1000000.0; // convert micros to s
 
 	  Prediction(dt);
@@ -116,7 +116,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	     * Update the state and covariance matrices.
 	   */
 
-	  if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
+	  if (meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) {
 	    // Radar updates
 		cout << "RADAR"<< endl;
 
@@ -274,7 +274,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 }
 
 /**
- * Update the state and covariance matrix
+ * Update the state and covariance matrix (probably not necesary)
  * @param x_out the state matrix
  * @param P_out the covariance matrix
  */
@@ -639,7 +639,7 @@ void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
 }
 
 /**
- * Method for generate the sigma points
+ * Method for generate the sigma points (probably not need it)
  * @param Xsig_out matrix with the sigma points
  */
 void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out) {
@@ -693,7 +693,7 @@ void UKF::GenerateSigmaPoints(MatrixXd* Xsig_out) {
  * SetIntialValues program for initialize the object
  * @param {MeasurementPackage} meas_package, initialize the initial values of the covariance matrix
  */
-void UKF::SetIntialValues(const MeasurementPackage meas_package) {
+void UKF::SetIntialValues(MeasurementPackage meas_package) {
 
 	  // Initial state Covariance Matrix P
 	  P_ = MatrixXd(5, 5);

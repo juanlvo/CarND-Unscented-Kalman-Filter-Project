@@ -67,6 +67,14 @@ public:
   ///* Sigma point spreading parameter
   double lambda_;
 
+  ///* time when the state is true, in us
+  long long previous_timestamp_;
+
+  ///* radar measurement dimension
+  int n_zrad_;
+
+  ///* radar measurement dimension
+  int n_zlas_;
 
   /**
    * Constructor
@@ -112,10 +120,11 @@ public:
 
   /**
    * Predict the radar measurement
-   * @param z_out prediction matrix
-   * @param S_out covariance matrix
+   * @param z_out {VectorXd} prediction matrix
+   * @param S_out {MatrixXd} covariance matrix
+   * @param Tc_ou {MatrixXd} predicted state matrix
    */
-  void PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out);
+  void PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Tc_ou);
 
 
   /**
@@ -147,7 +156,7 @@ public:
    * SetIntialValues program for initialize the object
    * @param {MeasurementPackage} meas_package, initialize the initial values of the covariance matrix
    */
-  void SetIntialValues(const MeasurementPackage meas_package);
+  void SetIntialValues(MeasurementPackage meas_package);
 
   /**
    * PredictLidarMeasurement method for predict the measurement for Lidar
