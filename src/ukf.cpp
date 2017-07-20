@@ -177,6 +177,26 @@ void UKF::Prediction(double delta_t) {
   Complete this function! Estimate the object's location. Modify the state
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
+
+	MatrixXd Xsig_aug = MatrixXd(2*n_aug_ + 1, n_aug_);
+
+	//create example matrix with predicted sigma points
+	MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
+
+	// compute augmented sigma points
+	AugmentedSigmaPoints(Xsig_aug);
+	// predict augmented sigma points
+	SigmaPointPrediction(Xsig_aug, delta_t, Xsig_pred);
+
+	VectorXd x_pred = VectorXd(n_x_);
+	MatrixXd P_pred = MatrixXd(n_x_, n_x_);
+	PredictMeanAndCovariance(Xsig_pred,x_pred, P_pred);
+
+	x_ = x_pred;
+	P_ = P_pred;
+	Xsig_pred_ = Xsig_pred;
+
+	return;
 }
 
 /**
