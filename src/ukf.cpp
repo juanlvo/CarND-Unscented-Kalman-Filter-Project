@@ -185,6 +185,7 @@ void UKF::Prediction(double delta_t) {
 
 	// compute augmented sigma points
 	AugmentedSigmaPoints(Xsig_aug);
+
 	// predict augmented sigma points
 	SigmaPointPrediction(Xsig_aug, delta_t, Xsig_pred);
 
@@ -212,6 +213,25 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the lidar NIS.
   */
+
+	//mean predicted measurement
+	VectorXd z = VectorXd::Zero(n_zlas_);
+	z << meas_package.raw_measurements_(0),meas_package.raw_measurements_(1);
+
+	//Kalman gain K;
+	MatrixXd K = MatrixXd::Zero(n_x_,n_zlas_);
+	K = Tc * S.inverse();
+
+	//residual
+	VectorXd z_diff = VectorXd::Zero(n_zlas_);
+	z_diff = z - z_pred;
+
+	//update state mean and covariance matrix
+	x_ = x_ + K * z_diff;
+	P_ = P_ - K*S*K.transpose();
+	NIS_laser_ = z_diff.transpose() * S.inverse() * z_diff;
+
+	return;
 }
 
 /**
