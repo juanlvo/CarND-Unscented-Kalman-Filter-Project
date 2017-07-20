@@ -455,7 +455,7 @@ void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out, MatrixXd* X
  * Predict Sigma Points
  * @param Xsig_out matrix of predicted sigma points
  */
-void UKF::SigmaPointPrediction(MatrixXd* Xsig_out, const double delta_t) {
+void UKF::SigmaPointPrediction(MatrixXd* Xsig_out, MatrixXd* Xsig_aug, double delta_t) {
 
   //create matrix with predicted sigma points as columns
   MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
@@ -667,4 +667,67 @@ void UKF::SetIntialValues(const MeasurementPackage meas_package) {
 	cout << "UKF initial: " << x_ << endl;
 
 	return;
+}
+
+/**
+ * PredictLidarMeasurement method for predict the measurement for Lidar
+ * @param {VectorXd} z_out  Prediction matrix
+ * @param {MatrixXd} S_out  Covariance matrix
+ * @param {MatrixXd} Tc_out Predicted state
+ */
+void UKF::PredictLidarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Tc_out) {
+
+  //create matrix for sigma points in measurement space
+  MatrixXd Zsig = MatrixXd(n_zlas_, 2 * n_aug_ + 1);
+
+  //transform sigma points into measurement space
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 sigma points
+
+    // measurement model
+    Zsig(0,i) = Xsig_pred_(0,i);          //px
+    Zsig(1,i) = Xsig_pred_(1,i);          //py
+
+  }
+
+  //mean predicted measurement
+  static VectorXd z_pred = VectorXd(n_zlas_);
+  z_pred.fill(0.0);
+  for (int i=0; i < 2*n_aug_+1; i++) {
+      z_pred = z_pred + weights_(i) * Zsig.col(i);
+  }
+
+  //measurement covariance matrix S
+  static MatrixXd S = MatrixXd(n_zlas_,n_zlas_);
+  S.fill(0.0);
+
+  //create matrix for cross correlation Tc
+  static MatrixXd Tc = MatrixXd(n_x_, n_zlas_);
+  Tc.fill(0.0);
+
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
+    //residual
+    VectorXd z_diff = Zsig.col(i) - z_pred;
+
+    S = S + weights_(i) * z_diff * z_diff.transpose();
+
+    // state difference
+    VectorXd x_diff = Xsig_pred_.col(i) - x_;
+
+    Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
+
+  }
+
+  //add measurement noise covariance matrix
+  static MatrixXd R = MatrixXd(n_zlas_,n_zlas_);
+  R <<    pow(std_laspx_,2), 0,
+          0, pow(std_laspy_,2);
+  S = S + R;
+
+  //write result
+  z_out = z_pred;
+  S_out = S;
+  Tc_out = Tc;
+
+  return;
+
 }

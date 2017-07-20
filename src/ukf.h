@@ -148,6 +148,14 @@ public:
    * @param {MeasurementPackage} meas_package, initialize the initial values of the covariance matrix
    */
   void SetIntialValues(const MeasurementPackage meas_package);
+
+  /**
+   * PredictLidarMeasurement method for predict the measurement for Lidar
+   * @param {VectorXd} z_out  Prediction matrix
+   * @param {MatrixXd} S_out  Covariance matrix
+   * @param {MatrixXd} Tc_out Predicted state
+   */
+  void PredictLidarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Tc_out);
 };
 
 #endif /* UKF_H */
