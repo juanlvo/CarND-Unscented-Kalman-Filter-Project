@@ -187,11 +187,11 @@ void UKF::Prediction(double delta_t) {
 	AugmentedSigmaPoints(Xsig_aug);
 
 	// predict augmented sigma points
-	SigmaPointPrediction(Xsig_aug, delta_t, Xsig_pred);
+	SigmaPointPrediction(Xsig_pred, Xsig_aug, delta_t);
 
 	VectorXd x_pred = VectorXd(n_x_);
 	MatrixXd P_pred = MatrixXd(n_x_, n_x_);
-	PredictMeanAndCovariance(Xsig_pred,x_pred, P_pred);
+	PredictMeanAndCovariance(Xsig_pred, x_pred, P_pred);
 
 	x_ = x_pred;
 	P_ = P_pred;
@@ -204,7 +204,7 @@ void UKF::Prediction(double delta_t) {
  * Updates the state and the state covariance matrix using a laser measurement.
  * @param {MeasurementPackage} meas_package
  */
-void UKF::UpdateLidar(MeasurementPackage meas_package) {
+void UKF::UpdateLidar(MeasurementPackage meas_package, VectorXd& z_out, MatrixXd& Tc_ou, MatrixXd& S_out) {
   /**
   TODO:
 
@@ -235,10 +235,13 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 }
 
 /**
- * Updates the state and the state covariance matrix using a radar measurement.
- * @param {MeasurementPackage} meas_package
+ * Updates the state and the state covariance matrix using a radar measurement
+ * @param {MeasurementPackage} meas_package The measurement at k+1
+ * @param {VectorXd}           z_out prediction matrix
+ * @param {MatrixXd}           Tc_ou predicted state matrix
+ * @param {MatrixXd}           S_out covariance matrix
  */
-void UKF::UpdateRadar(MeasurementPackage meas_package) {
+void UKF::UpdateRadar(MeasurementPackage meas_package, VectorXd& z_out, MatrixXd& Tc_ou, MatrixXd& S_out) {
   /**
   TODO:
 
@@ -410,7 +413,7 @@ void UKF::UpdateState(VectorXd* x_out, MatrixXd* P_out) {
  * @param z_out prediction matrix
  * @param S_out covariance matrix
  */
-void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Tc_ou) {
+void UKF::PredictRadarMeasurement(VectorXd& z_out, MatrixXd& S_out, MatrixXd& Tc_ou) {
 
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_z_, 2 * n_aug_ + 1);
@@ -480,10 +483,11 @@ void UKF::PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Tc
 
 /**
  * Predict Mean and Convariance Matrix
- * @param x_out state mean matrix
- * @param P_out predicted state covariance matrix
+ * @param {VectorXd} x_out state mean matrix
+ * @param {MatrixXd} P_out predicted state covariance matrix
+ * @param {MatrixXd} Xsig_pred sigma point predicted
  */
-void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out, MatrixXd* Xsig_pred) {
+void UKF::PredictMeanAndCovariance(VectorXd &x_out, MatrixXd &P_out, MatrixXd &Xsig_pred) {
 
   //create vector for predicted state
   VectorXd x = VectorXd(n_x_);
@@ -517,9 +521,11 @@ void UKF::PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out, MatrixXd* X
 
 /**
  * Predict Sigma Points
- * @param Xsig_out matrix of predicted sigma points
+ * @param {MatrixXd} Xsig_out matrix of predicted sigma points
+ * @param {MatrixXd} Xsig_aug matrix with the sigma point prediction
+ * @param {double}   delta_t  difference of time
  */
-void UKF::SigmaPointPrediction(MatrixXd* Xsig_out, MatrixXd* Xsig_aug, double delta_t) {
+void UKF::SigmaPointPrediction(MatrixXd &Xsig_out, MatrixXd &Xsig_aug, double &delta_t) {
 
   //create matrix with predicted sigma points as columns
   MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
@@ -580,7 +586,7 @@ void UKF::SigmaPointPrediction(MatrixXd* Xsig_out, MatrixXd* Xsig_aug, double de
  * Method Augmentation of Sigma Points
  * @param Xsig_out augmented sigma points
  */
-void UKF::AugmentedSigmaPoints(MatrixXd* Xsig_out) {
+void UKF::AugmentedSigmaPoints(MatrixXd &Xsig_out) {
 
   //set state dimension
   int n_x = 5;
@@ -739,7 +745,7 @@ void UKF::SetIntialValues(MeasurementPackage meas_package) {
  * @param {MatrixXd} S_out  Covariance matrix
  * @param {MatrixXd} Tc_out Predicted state
  */
-void UKF::PredictLidarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Tc_out) {
+void UKF::PredictLidarMeasurement(VectorXd &z_out, MatrixXd &S_out, MatrixXd &Tc_out) {
 
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_zlas_, 2 * n_aug_ + 1);

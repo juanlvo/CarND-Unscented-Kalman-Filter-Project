@@ -101,15 +101,21 @@ public:
 
   /**
    * Updates the state and the state covariance matrix using a laser measurement
-   * @param meas_package The measurement at k+1
+   * @param {MeasurementPackage} meas_package The measurement at k+1
+   * @param {VectorXd}           z_out prediction matrix
+   * @param {MatrixXd}           Tc_ou predicted state matrix
+   * @param {MatrixXd}           S_out covariance matrix
    */
-  void UpdateLidar(MeasurementPackage meas_package);
+  void UpdateLidar(MeasurementPackage meas_package, VectorXd& z_out, MatrixXd& Tc_ou, MatrixXd& S_out);
 
   /**
    * Updates the state and the state covariance matrix using a radar measurement
-   * @param meas_package The measurement at k+1
+   * @param {MeasurementPackage} meas_package The measurement at k+1
+   * @param {VectorXd}           z_out prediction matrix
+   * @param {MatrixXd}           Tc_ou predicted state matrix
+   * @param {MatrixXd}           S_out covariance matrix
    */
-  void UpdateRadar(MeasurementPackage meas_package);
+  void UpdateRadar(MeasurementPackage meas_package, VectorXd& z_out, MatrixXd& Tc_ou, MatrixXd& S_out);
 
   /**
    * Update the state and the covariance matrix
@@ -124,27 +130,30 @@ public:
    * @param S_out {MatrixXd} covariance matrix
    * @param Tc_ou {MatrixXd} predicted state matrix
    */
-  void PredictRadarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Tc_ou);
+  void PredictRadarMeasurement(VectorXd& z_out, MatrixXd& S_out, MatrixXd& Tc_ou);
 
 
   /**
    * Predict Mean and Convariance Matrix
-   * @param x_out state mean matrix
-   * @param P_out predicted state covariance matrix
+   * @param {VectorXd} x_out state mean matrix
+   * @param {MatrixXd} P_out predicted state covariance matrix
+   * @param {MatrixXd} Xsig_pred sigma point predicted
    */
-  void PredictMeanAndCovariance(VectorXd* x_out, MatrixXd* P_out);
+  void PredictMeanAndCovariance(VectorXd &x_out, MatrixXd &P_out, MatrixXd &Xsig_pred);
 
   /**
    * Predict Sigma Points
-   * @param Xsig_out matrix of predicted sigma points
+   * @param {MatrixXd} Xsig_out matrix of predicted sigma points
+   * @param {MatrixXd} Xsig_aug matrix with the sigma point prediction
+   * @param {double}   delta_t  difference of time
    */
-  void SigmaPointPrediction(MatrixXd* Xsig_out);
+  void SigmaPointPrediction(MatrixXd &Xsig_out, MatrixXd &Xsig_aug, double &delta_t);
 
   /**
    * Method Augmentation of Sigma Points
    * @param Xsig_out augmented sigma points
    */
-  void AugmentedSigmaPoints(MatrixXd* Xsig_out);
+  void AugmentedSigmaPoints(MatrixXd &Xsig_out);
 
   /**
    * Method for generate the sigma points
@@ -164,7 +173,7 @@ public:
    * @param {MatrixXd} S_out  Covariance matrix
    * @param {MatrixXd} Tc_out Predicted state
    */
-  void PredictLidarMeasurement(VectorXd* z_out, MatrixXd* S_out, MatrixXd* Tc_out);
+  void PredictLidarMeasurement(VectorXd &z_out, MatrixXd &S_out, MatrixXd &Tc_out);
 };
 
 #endif /* UKF_H */
