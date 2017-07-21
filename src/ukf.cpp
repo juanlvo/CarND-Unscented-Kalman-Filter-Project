@@ -73,8 +73,12 @@ UKF::UKF() {
   //* the current NIS for laser
   NIS_laser_ = 0.0;
 
+  ///* Augmented state dimension
+  n_aug_ = 7;
+
   //* Weights of sigma points
   weights_ = VectorXd::Zero(2*n_aug_+1);
+
 }
 
 UKF::~UKF() {}
@@ -84,6 +88,7 @@ UKF::~UKF() {}
  * either radar or laser.
  */
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
+	cout << "ProcessMeasurement \n";
 	  /**
 	  TODO:
 
@@ -110,10 +115,17 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	   *  Prediction
 	   ****************************************************************************/
 	  // Calculate the timestep between measurements in seconds
-	  float dt = (meas_package.timestamp_ - previous_timestamp_);
-	  dt /= 1000000.0; // convert micros to s
+	  float delta_t = (meas_package.timestamp_ - previous_timestamp_);
+	  delta_t /= 1000000.0; // convert micros to s
 
-	  Prediction(dt);
+	  while (delta_t > 0.1)
+	  {
+		  double dt = 0.05;
+		  Prediction(dt);
+		  delta_t -= dt;
+		}
+
+	  Prediction(delta_t);
 
 	  /*****************************************************************************
 	   *  Update
@@ -180,6 +192,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
  * measurement and this one.
  */
 void UKF::Prediction(double delta_t) {
+	cout << "Prediction \n";
   /**
   TODO:
 
@@ -187,10 +200,13 @@ void UKF::Prediction(double delta_t) {
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
 
-	MatrixXd Xsig_aug = MatrixXd(2*n_aug_ + 1, n_aug_);
+	cout << "n_aug_ "+n_aug_;
+	static MatrixXd Xsig_aug = MatrixXd(2*n_aug_ + 1, n_aug_);
+    cout << "1 \n";
 
 	//create example matrix with predicted sigma points
-	MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
+	static MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
+    cout << "2 \n";
 
 	// compute augmented sigma points
 	AugmentedSigmaPoints(Xsig_aug);
@@ -198,8 +214,8 @@ void UKF::Prediction(double delta_t) {
 	// predict augmented sigma points
 	SigmaPointPrediction(Xsig_pred, Xsig_aug, delta_t);
 
-	VectorXd x_pred = VectorXd(n_x_);
-	MatrixXd P_pred = MatrixXd(n_x_, n_x_);
+	static VectorXd x_pred = VectorXd(n_x_);
+	static MatrixXd P_pred = MatrixXd(n_x_, n_x_);
 	PredictMeanAndCovariance(Xsig_pred, x_pred, P_pred);
 
 	x_ = x_pred;
@@ -214,6 +230,7 @@ void UKF::Prediction(double delta_t) {
  * @param {MeasurementPackage} meas_package
  */
 void UKF::UpdateLidar(MeasurementPackage meas_package, VectorXd &z_out, MatrixXd &Tc_ou, MatrixXd &S_out) {
+  cout << "UpdateLidar \n";
   /**
   TODO:
 
@@ -251,6 +268,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package, VectorXd &z_out, MatrixXd
  * @param {MatrixXd}           S_out covariance matrix
  */
 void UKF::UpdateRadar(MeasurementPackage meas_package, VectorXd &z_out, MatrixXd &Tc_ou, MatrixXd &S_out) {
+  cout << "UpdateRadar \n";
   /**
   TODO:
 
@@ -292,6 +310,8 @@ void UKF::UpdateRadar(MeasurementPackage meas_package, VectorXd &z_out, MatrixXd
  * @param Tc_ou {MatrixXd} predicted state matrix
  */
 void UKF::PredictRadarMeasurement(VectorXd &z_out, MatrixXd &S_out, MatrixXd &Tc_ou) {
+
+	cout << "PredictRadarMeasurement \n";
 
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_zrad_, 2 * n_aug_ + 1);
@@ -381,6 +401,8 @@ void UKF::PredictRadarMeasurement(VectorXd &z_out, MatrixXd &S_out, MatrixXd &Tc
  */
 void UKF::PredictMeanAndCovariance(const MatrixXd &Xsig_pred, VectorXd &x_out, MatrixXd &P_out) {
 
+	cout << "PredictMeanAndCovariance \n";
+
   //create vector for predicted state
   VectorXd x = VectorXd(n_x_);
 
@@ -409,6 +431,8 @@ void UKF::PredictMeanAndCovariance(const MatrixXd &Xsig_pred, VectorXd &x_out, M
   //write result
   x_out = x;
   P_out = P;
+
+  return;
 }
 
 /**
@@ -419,6 +443,7 @@ void UKF::PredictMeanAndCovariance(const MatrixXd &Xsig_pred, VectorXd &x_out, M
  */
 void UKF::SigmaPointPrediction(MatrixXd &Xsig_out, MatrixXd &Xsig_aug, double &delta_t) {
 
+	cout << "SigmaPointPrediction \n";
   //create matrix with predicted sigma points as columns
   MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
 
@@ -480,6 +505,7 @@ void UKF::SigmaPointPrediction(MatrixXd &Xsig_out, MatrixXd &Xsig_aug, double &d
  */
 void UKF::AugmentedSigmaPoints(MatrixXd &Xsig_out) {
 
+	cout << "AugmentedSigmaPoints \n";
   //set state dimension
   int n_x = 5;
 
@@ -542,6 +568,7 @@ void UKF::AugmentedSigmaPoints(MatrixXd &Xsig_out) {
  */
 void UKF::SetIntialValues(MeasurementPackage meas_package) {
 
+	cout << "SetIntialValues \n";
 	  // Initial state Covariance Matrix P
 	  P_ = MatrixXd(5, 5);
 	  P_ <<   1, 0, 0, 0, 0,
@@ -588,6 +615,7 @@ void UKF::SetIntialValues(MeasurementPackage meas_package) {
  */
 void UKF::PredictLidarMeasurement(VectorXd &z_out, MatrixXd &S_out, MatrixXd &Tc_out) {
 
+	cout << "PredictLidarMeasurement \n";
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_zlas_, 2 * n_aug_ + 1);
 
