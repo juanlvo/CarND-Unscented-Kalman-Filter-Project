@@ -76,6 +76,13 @@ public:
   ///* radar measurement dimension
   int n_zlas_;
 
+
+  ///* the current NIS for radar
+  double NIS_radar_;
+
+  ///* the current NIS for laser
+  double NIS_laser_;
+
   /**
    * Constructor
    */
@@ -106,7 +113,7 @@ public:
    * @param {MatrixXd}           Tc_ou predicted state matrix
    * @param {MatrixXd}           S_out covariance matrix
    */
-  void UpdateLidar(MeasurementPackage meas_package, VectorXd& z_out, MatrixXd& Tc_ou, MatrixXd& S_out);
+  void UpdateLidar(MeasurementPackage meas_package, VectorXd &z_out, MatrixXd &Tc_ou, MatrixXd &S_out);
 
   /**
    * Updates the state and the state covariance matrix using a radar measurement
@@ -115,14 +122,7 @@ public:
    * @param {MatrixXd}           Tc_ou predicted state matrix
    * @param {MatrixXd}           S_out covariance matrix
    */
-  void UpdateRadar(MeasurementPackage meas_package, VectorXd& z_out, MatrixXd& Tc_ou, MatrixXd& S_out);
-
-  /**
-   * Update the state and the covariance matrix
-   * @param x_out the state matrix
-   * @param P_out the covariance matrix
-   */
-  void UpdateState(VectorXd* x_out, MatrixXd* P_out);
+  void UpdateRadar(MeasurementPackage meas_package, VectorXd &z_out, MatrixXd &Tc_ou, MatrixXd &S_out);
 
   /**
    * Predict the radar measurement
@@ -130,16 +130,16 @@ public:
    * @param S_out {MatrixXd} covariance matrix
    * @param Tc_ou {MatrixXd} predicted state matrix
    */
-  void PredictRadarMeasurement(VectorXd& z_out, MatrixXd& S_out, MatrixXd& Tc_ou);
+  void PredictRadarMeasurement(VectorXd &z_out, MatrixXd &S_out, MatrixXd &Tc_ou);
 
 
   /**
    * Predict Mean and Convariance Matrix
-   * @param {VectorXd} x_out state mean matrix
-   * @param {MatrixXd} P_out predicted state covariance matrix
-   * @param {MatrixXd} Xsig_pred sigma point predicted
+ * @param {MatrixXd} Xsig_pred sigma point predicted
+ * @param {VectorXd} x_out state mean matrix
+ * @param {MatrixXd} P_out predicted state covariance matrix
    */
-  void PredictMeanAndCovariance(VectorXd &x_out, MatrixXd &P_out, MatrixXd &Xsig_pred);
+  void PredictMeanAndCovariance(const MatrixXd &Xsig_pred, VectorXd &x_out, MatrixXd &P_out);
 
   /**
    * Predict Sigma Points
@@ -154,12 +154,6 @@ public:
    * @param Xsig_out augmented sigma points
    */
   void AugmentedSigmaPoints(MatrixXd &Xsig_out);
-
-  /**
-   * Method for generate the sigma points
-   * @param Xsig_out matrix with the sigma points
-   */
-  void GenerateSigmaPoints(MatrixXd* Xsig_out);
 
   /**
    * SetIntialValues program for initialize the object
