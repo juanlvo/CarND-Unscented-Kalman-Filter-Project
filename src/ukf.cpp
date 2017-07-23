@@ -200,13 +200,10 @@ void UKF::Prediction(double delta_t) {
   vector, x_. Predict sigma points, the state, and the state covariance matrix.
   */
 
-	cout << "n_aug_ "+n_aug_;
 	static MatrixXd Xsig_aug = MatrixXd(2*n_aug_ + 1, n_aug_);
-    cout << "1 \n";
 
 	//create example matrix with predicted sigma points
 	static MatrixXd Xsig_pred = MatrixXd(n_x_, 2 * n_aug_ + 1);
-    cout << "2 \n";
 
 	// compute augmented sigma points
 	AugmentedSigmaPoints(Xsig_aug);
@@ -214,8 +211,12 @@ void UKF::Prediction(double delta_t) {
 	// predict augmented sigma points
 	SigmaPointPrediction(Xsig_pred, Xsig_aug, delta_t);
 
-	static VectorXd x_pred = VectorXd(n_x_);
-	static MatrixXd P_pred = MatrixXd(n_x_, n_x_);
+	cout << "Xsig_pred \n";
+	cout << Xsig_pred;
+	cout << "\n";
+
+	VectorXd x_pred = VectorXd(n_x_);
+	MatrixXd P_pred = MatrixXd(n_x_, n_x_);
 	PredictMeanAndCovariance(Xsig_pred, x_pred, P_pred);
 
 	x_ = x_pred;
@@ -404,10 +405,10 @@ void UKF::PredictMeanAndCovariance(const MatrixXd &Xsig_pred, VectorXd &x_out, M
 	cout << "PredictMeanAndCovariance \n";
 
   //create vector for predicted state
-  VectorXd x = VectorXd(n_x_);
+  static VectorXd x = VectorXd(n_x_);
 
   //create covariance matrix for prediction
-  MatrixXd P = MatrixXd(n_x_, n_x_);
+  static MatrixXd P = MatrixXd(n_x_, n_x_);
 
   //predicted state mean
   x.fill(0.0);
@@ -431,6 +432,11 @@ void UKF::PredictMeanAndCovariance(const MatrixXd &Xsig_pred, VectorXd &x_out, M
   //write result
   x_out = x;
   P_out = P;
+
+  cout << x_out;
+  cout << "\n";
+  cout << P_out;
+  cout << "\n";
 
   return;
 }
@@ -495,6 +501,8 @@ void UKF::SigmaPointPrediction(MatrixXd &Xsig_out, MatrixXd &Xsig_aug, double &d
   //write result
   Xsig_out = Xsig_pred;
 
+  cout << Xsig_out;
+  cout << "\n";
   return;
 
 }
