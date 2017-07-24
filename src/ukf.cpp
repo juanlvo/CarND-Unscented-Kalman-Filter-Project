@@ -73,11 +73,36 @@ UKF::UKF() {
   //* the current NIS for laser
   NIS_laser_ = 0.0;
 
-  ///* Augmented state dimension
+  //* Augmented state dimension
   n_aug_ = 7;
 
   //* Weights of sigma points
   weights_ = VectorXd::Zero(2*n_aug_+1);
+
+  //* Sigma point spreading parameter
+  lambda_ = 3 - n_aug_;
+
+  // initialize the sigma points matrix with zeroes
+  Xsig_pred_ = MatrixXd::Zero(n_x_, 2 * n_aug_ + 1);
+
+  // Process noise standard deviation yaw acceleration in rad/s^2
+  std_yawdd_ = 0.7;
+
+  // Laser measurement noise standard deviation position1 in m
+  std_laspx_ = 0.15;
+
+  // Laser measurement noise standard deviation position2 in m
+  std_laspy_ = 0.15;
+
+  // set weights
+  double weight_0 = lambda_/(lambda_+n_aug_);
+  weights_(0) = weight_0;
+  for (int i=1; i<2*n_aug_+1; i++) {  //2n+1 weights
+    double weight = 0.5/(n_aug_+lambda_);
+    weights_(i) = weight;
+  }
+
+  return;
 
 }
 
@@ -156,6 +181,9 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	    // update the state using the RADAR measurement
 	    UpdateRadar(meas_package, z_pred, Tc, S);
 
+	    // update the time
+	    previous_timestamp_ = meas_package.timestamp_;
+
 	  } else if (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_) {
 	    // Laser updates
 		cout << "LASER" << endl;
@@ -175,10 +203,10 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 	    // update the state using the LIDAR measurement
 	    UpdateLidar(meas_package, z_pred, Tc, S);
 
-	  }
+	    // update the time
+	    previous_timestamp_ = meas_package.timestamp_;
 
-	  // update the time
-	  previous_timestamp_ = meas_package.timestamp_;
+	  }
 
 	  // print the output
 	  cout << "P_ = " << P_ << endl;
@@ -313,6 +341,13 @@ void UKF::UpdateRadar(MeasurementPackage meas_package, VectorXd &z_out, MatrixXd
 void UKF::PredictRadarMeasurement(VectorXd &z_out, MatrixXd &S_out, MatrixXd &Tc_ou) {
 
 	cout << "PredictRadarMeasurement \n";
+
+	cout << "z_out \n";
+	cout << z_out << "\n";
+	cout << "S_out \n";
+	cout << S_out << "\n";
+	cout << "Tc_ou \n";
+	cout << Tc_ou << "\n";
 
   //create matrix for sigma points in measurement space
   MatrixXd Zsig = MatrixXd(n_zrad_, 2 * n_aug_ + 1);
